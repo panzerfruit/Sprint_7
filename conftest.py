@@ -1,6 +1,7 @@
 import pytest
 import requests
 from data import Urls
+from helpers import get_new_courier_data
 
 @pytest.fixture
 def delete_courier(): # Фикстура для удаления курьеров после тестов
@@ -13,3 +14,10 @@ def delete_courier(): # Фикстура для удаления курьеро�
         if login_resp.status_code == 200: # Если вход успешный, получаем ID курьера и удаляем его
             courier_id = login_resp.json().get("id") # Получаем ID курьера из ответа на вход
             requests.delete(f"{Urls.CREATE_COURIER}/{courier_id}") # Отправляем запрос на удаление курьера по его ID
+
+@pytest.fixture
+def create_courier_for_login(delete_courier): # Фикстура создает курьера для тестов логина и возвращает его данные
+    payload = get_new_courier_data() # Получаем данные нового курьера с уникальными значениями
+    requests.post(Urls.CREATE_COURIER, data=payload) # Отправляем запрос на создание курьера с этими данными
+    delete_courier.append(payload) # Передаем в фикстуру очистки, чтобы удалить после теста
+    return payload # Возвращаем данные созданного курьера для использования в тестах логина
